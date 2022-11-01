@@ -321,6 +321,7 @@ namespace GameKit.Purchasing
                 if (transaction.State == TransactionState.Successful)
                     Debug.Log(LogType.Error, $"{transaction.Product.Id} Transaction is already completed");
                 transaction.State = TransactionState.Successful;
+                _transactions.Remove(transaction);
             }
 
             if (FindProductByStoreId(product.definition.id, out var p))

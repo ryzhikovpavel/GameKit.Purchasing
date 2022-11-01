@@ -8,6 +8,7 @@ namespace GameKit.Purchasing.Mock
 {
     public class MockPurchaseService<TProduct>: IPurchaseService<TProduct> where TProduct : class, IProductItem
     {
+        private List<Transaction<TProduct>> _transactions = new List<Transaction<TProduct>>();
         private TProduct[] _products;
         public event Action<ITransaction<TProduct>> EventTransactionBegin;
 
@@ -50,11 +51,17 @@ namespace GameKit.Purchasing.Mock
 
         public void Confirm(TProduct product)
         {
-            Debug.Log($"IAP Purchase: {product.Id}");
+            Debug.Log($"IAP Confirm: {product.Id}");
             if (product.Type == ProductItemType.Consumable)
                 product.Status = ProductStatus.Ready;
             else
                 product.Status = ProductStatus.Purchased;
+
+            if (FindTransaction(product.StoreId, out var transaction))
+            {
+                transaction.State = TransactionState.Successful;
+                _transactions.Remove(transaction);
+            }
         }
 
         public async Task Restore()
@@ -68,6 +75,7 @@ namespace GameKit.Purchasing.Mock
         {
             Debug.Log($"IAP Purchase: {transaction.Product.Id}");
             transaction.State = TransactionState.Processing;
+            _transactions.Add(transaction);
             await Task.Delay(1000);
             transaction.State = TransactionState.Pending;
             transaction.Product.Status = ProductStatus.Pending;
@@ -79,5 +87,20 @@ namespace GameKit.Purchasing.Mock
 
         IEnumerator IEnumerable.GetEnumerator()
             => GetEnumerator();
+        
+        private bool FindTransaction(string storeId, out Transaction<TProduct> transaction)
+        {
+            foreach (var t in _transactions)
+            {
+                if (t.Product.StoreId.Equals(storeId))
+                {
+                    transaction = t;
+                    return true;
+                }
+            }
+
+            transaction = default;
+            return false;
+        }
     }
 }
