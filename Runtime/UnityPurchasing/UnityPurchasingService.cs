@@ -65,6 +65,8 @@ namespace GameKit.Purchasing
 
             InitializeItems();
             if (Debug.IsLogTypeAllowed(LogType.Log)) Debug.Log("Initialized");
+            
+            IsInitialized = true;
         }
 
         public void Confirm(TProduct product)
