@@ -23,7 +23,7 @@ namespace GameKit.Purchasing
         {
             if (string.IsNullOrWhiteSpace(StoreValueWithCurrency))
             {
-                if (StoreValue == 0) return $"${Cents/100:C}";
+                if (StoreValue == 0) return $"${Cents/100f:F2}";
                 else return $"{StoreValue} {StoreCurrencyIsoCode}";
             }
 
