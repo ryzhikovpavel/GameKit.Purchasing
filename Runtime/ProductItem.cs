@@ -25,8 +25,8 @@ namespace GameKit.Purchasing
         public ProductItem(){}
         public ProductItem( ProductItemType type, string id, uint priceInCents, string googleId = null, string appleId = null)
         {
-            id = id;
-            type = type;
+            this.id = id;
+            this.type = type;
             this.googleId = string.IsNullOrWhiteSpace(googleId) ? id : googleId;
             this.appleId = string.IsNullOrWhiteSpace(appleId) ? id : appleId;
             this.price = new Price(priceInCents);
