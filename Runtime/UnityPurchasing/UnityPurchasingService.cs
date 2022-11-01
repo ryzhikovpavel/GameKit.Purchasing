@@ -22,7 +22,7 @@ namespace GameKit.Purchasing
 
         private string _error;
         private bool _processing;
-        private List<Transaction<TProduct>> _transactions;
+        private List<Transaction<TProduct>> _transactions = new List<Transaction<TProduct>>();
 
         public event Action<ITransaction<TProduct>> EventTransactionBegin;
         public event Action<ITransaction<TProduct>> EventTransactionSuccess;
