@@ -337,7 +337,7 @@ namespace GameKit.Purchasing
             _metadata = metadata;
         }
 
-        public decimal Localized => _metadata.localizedPrice;
+        public decimal Value => _metadata.localizedPrice;
         public string CurrencyIsoCode => _metadata.isoCurrencyCode;
         public override string ToString() => _metadata.localizedPriceString;
     }

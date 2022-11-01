@@ -2,7 +2,7 @@ namespace GameKit.Purchasing
 {
     public interface IProductPrice
     {
-        decimal Localized { get; }
+        decimal Value { get; }
         string CurrencyIsoCode { get; }
     }
 }
