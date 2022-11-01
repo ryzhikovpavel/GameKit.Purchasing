@@ -223,7 +223,9 @@ namespace GameKit.Purchasing
                     Debug.Log($"Product: {product.definition.id}");
                 }
                 
-                item.Price = new Price(product.metadata);
+                item.Price.StoreValue = product.metadata.localizedPrice;
+                item.Price.StoreCurrencyIsoCode = product.metadata.isoCurrencyCode;
+                item.Price.StoreValueWithCurrency = product.metadata.localizedPriceString;
 
                 if (product.availableToPurchase == false)
                 {
@@ -344,20 +346,6 @@ namespace GameKit.Purchasing
         }
     }
 
-    internal class Price: IProductPrice
-    {
-        private readonly ProductMetadata _metadata;
-
-        public Price(ProductMetadata metadata)
-        {
-            _metadata = metadata;
-        }
-
-        public decimal Value => _metadata.localizedPrice;
-        public string CurrencyIsoCode => _metadata.isoCurrencyCode;
-        public override string ToString() => _metadata.localizedPriceString;
-    }
-    
     internal static class ProductExtension
     {
         public static ProductType GetUnityProductType(this IProductItem product)

@@ -5,7 +5,7 @@ namespace GameKit.Purchasing
         string Id { get; }
         string StoreId { get; }
         ProductItemType Type { get; }
-        IProductPrice Price { get; set; }
+        Price Price { get; }
         ProductStatus Status { get; set; }
     }
 }
