@@ -19,7 +19,7 @@ namespace GameKit.Purchasing
         private IStoreController _storeController;
         private IExtensionProvider _extensions;
         private TProduct[] _products;
-        
+
         private string _error;
         private bool _processing;
         private List<Transaction<TProduct>> _transactions;
@@ -259,8 +259,12 @@ namespace GameKit.Purchasing
             if (FindProductByStoreId(product.definition.id, out var item))
                 item.Status = ProductStatus.Pending;
 
-            if (IsPurchasedProductDeferred(product)) return PurchaseProcessingResult.Pending;
-            if (product.hasReceipt == false) return PurchaseProcessingResult.Pending;
+            if (IsPurchasedProductDeferred(product))
+            {
+                if (FindTransaction(product.definition.id, out var transaction))
+                    transaction.State = TransactionState.Pending;
+                return PurchaseProcessingResult.Pending;
+            }
 
             void OnValidated(bool result)
             {
@@ -325,7 +329,9 @@ namespace GameKit.Purchasing
             }
 
             if (FindProductByStoreId(product.definition.id, out var p))
+            {
                 EventProductPurchased?.Invoke(p);
+            }
             else
             if (Debug.IsLogTypeAllowed(LogType.Error))
                 Debug.Log(LogType.Error, $"Not found product with '{product.definition.id}' in ProcessPurchase");
