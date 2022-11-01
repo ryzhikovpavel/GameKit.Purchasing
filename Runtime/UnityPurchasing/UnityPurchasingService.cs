@@ -14,8 +14,8 @@ namespace GameKit.Purchasing
     public class UnityPurchasingService<TProduct>: IStoreListener, IPurchaseService<TProduct> where TProduct : class, IProductItem
     {
         // ReSharper disable once InconsistentNaming
-        private readonly ILogger Debug;
-        private readonly ITransactionValidator _validator;
+        private ILogger Debug;
+        private ITransactionValidator _validator;
         private IStoreController _storeController;
         private IExtensionProvider _extensions;
         private TProduct[] _products;
@@ -36,6 +36,7 @@ namespace GameKit.Purchasing
 
         public UnityPurchasingService() : this(new MockValidator(), UnityEngine.Debug.unityLogger) { }
         public UnityPurchasingService(ILogger logger) : this(new MockValidator(), logger) { }
+        public UnityPurchasingService(ITransactionValidator validator) : this(validator, UnityEngine.Debug.unityLogger) { }
         public UnityPurchasingService(ITransactionValidator validator, ILogger logger)
         {
             _validator = validator;
@@ -49,9 +50,7 @@ namespace GameKit.Purchasing
             if (UnityServices.State == ServicesInitializationState.Uninitialized)
                 await UnityServices.InitializeAsync();
 
-            var module = StandardPurchasingModule.Instance();
-            module.useFakeStoreUIMode = FakeStoreUIMode.DeveloperUser;
-            var builder = ConfigurationBuilder.Instance(module);
+            var builder = ConfigurationBuilder.Instance(StandardPurchasingModule.Instance());
             foreach (var product in products)
                 builder.AddProduct(product.StoreId, product.GetUnityProductType());
 
