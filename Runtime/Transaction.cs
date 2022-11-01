@@ -1,6 +1,6 @@
 namespace GameKit.Purchasing
 {
-    public class Transaction<TProduct>: ITransaction<TProduct> where TProduct : IProduct
+    public class Transaction<TProduct>: ITransaction<TProduct> where TProduct : IProductItem
     {
         public Transaction(TProduct product, string id)
         {

@@ -3,13 +3,15 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Unity.Services.Core;
 using UnityEngine;
 using UnityEngine.Purchasing;
 
 namespace GameKit.Purchasing
 {
-    public class UnityPurchasingService<TProduct>: IStoreListener, IPurchaseService<TProduct> where TProduct : IProduct
+    [PublicAPI]
+    public class UnityPurchasingService<TProduct>: IStoreListener, IPurchaseService<TProduct> where TProduct : class, IProductItem
     {
         // ReSharper disable once InconsistentNaming
         private readonly ILogger Debug;
@@ -40,14 +42,16 @@ namespace GameKit.Purchasing
             Debug = logger;
         }
 
-        public async Task Initialize(TProduct[] products)
+        public async Task Initialize(params TProduct[] products)
         {
             _products = products;
 
             if (UnityServices.State == ServicesInitializationState.Uninitialized)
-                await UnityServices.InitializeAsync(new InitializationOptions());
-            
-            var builder = ConfigurationBuilder.Instance(StandardPurchasingModule.Instance());
+                await UnityServices.InitializeAsync();
+
+            var module = StandardPurchasingModule.Instance();
+            module.useFakeStoreUIMode = FakeStoreUIMode.DeveloperUser;
+            var builder = ConfigurationBuilder.Instance(module);
             foreach (var product in products)
                 builder.AddProduct(product.StoreId, product.GetUnityProductType());
 
@@ -68,10 +72,36 @@ namespace GameKit.Purchasing
                 throw new Exception("Initialize IAP Service failed: " + _error);
         }
 
-        public void ConfirmAccrual(TProduct product)
+        public void Confirm(TProduct product)
         {
             var p = _storeController.products.WithID(product.StoreId);
             _storeController.ConfirmPendingPurchase(p);
+        }
+
+        public void Restore()
+        {
+            if (Application.platform == RuntimePlatform.WSAPlayerX86 ||
+                Application.platform == RuntimePlatform.WSAPlayerX64 ||
+                Application.platform == RuntimePlatform.WSAPlayerARM)
+            {
+                _extensions.GetExtension<IMicrosoftExtensions>().RestoreTransactions();
+            }
+            else if (Application.platform == RuntimePlatform.IPhonePlayer ||
+                     Application.platform == RuntimePlatform.OSXPlayer ||
+                     Application.platform == RuntimePlatform.tvOS)
+            {
+                _extensions.GetExtension<IAppleExtensions>().RestoreTransactions(null);
+            }
+            else if (Application.platform == RuntimePlatform.Android &&
+                     StandardPurchasingModule.Instance().appStore == AppStore.GooglePlay)
+            {
+                _extensions.GetExtension<IGooglePlayStoreExtensions>().RestoreTransactions(null);
+            }
+            else
+            {
+                Debug.Log(LogType.Warning,Application.platform.ToString() +
+                                             " is not a supported platform for the Codeless IAP restore button");
+            }
         }
 
         public bool FindProduct(string productId, out TProduct product)
@@ -162,6 +192,38 @@ namespace GameKit.Purchasing
             var apple = _extensions.GetExtension<IAppleExtensions>();
             if (apple != null)
                 apple.RegisterPurchaseDeferredListener( OnDeferredPurchase );
+
+            foreach (TProduct item in _products)
+            {
+                Product product = _storeController.products.WithID(item.StoreId);
+                if (product == null)
+                {
+                    Debug.Log(LogType.Error, $"Product '{item.StoreId}' not found");
+                    continue;
+                }
+
+                if (Debug.IsLogTypeAllowed(LogType.Log))
+                {
+                    Debug.Log($"Product: {product.definition.id}");
+                }
+                
+                item.Price = new Price(product.metadata);
+
+                if (product.availableToPurchase == false)
+                {
+                    item.Status = ProductStatus.None;
+                    continue;
+                }
+
+                if (product.hasReceipt)
+                {
+                    item.Status = ProductStatus.Purchased;
+                }
+                else
+                {
+                    item.Status = ProductStatus.Ready;
+                }
+            }
         }
 
         void IStoreListener.OnInitializeFailed(InitializationFailureReason error)
@@ -175,6 +237,9 @@ namespace GameKit.Purchasing
         {
             var product = purchaseEvent.purchasedProduct;
             if (Debug.IsLogTypeAllowed(LogType.Log)) Debug.Log($"ProcessPurchase - Product: '{product.definition.id}'");
+
+            if (FindProductByStoreId(product.definition.id, out var item))
+                item.Status = ProductStatus.Pending;
 
             if (IsPurchasedProductDeferred(product)) return PurchaseProcessingResult.Pending;
             if (product.hasReceipt == false) return PurchaseProcessingResult.Pending;
@@ -196,6 +261,9 @@ namespace GameKit.Purchasing
                 transaction.Error = _error;
                 transaction.State = failureReason == PurchaseFailureReason.UserCancelled ? TransactionState.Canceled : TransactionState.Failed;
             }
+
+            if (FindProductByStoreId(product.definition.id, out var item))
+                item.Status = ProductStatus.Ready;
         }
 
         private bool FindProductByStoreId(string storeId, out TProduct product)
@@ -260,15 +328,29 @@ namespace GameKit.Purchasing
         }
     }
 
+    internal class Price: IProductPrice
+    {
+        private readonly ProductMetadata _metadata;
+
+        public Price(ProductMetadata metadata)
+        {
+            _metadata = metadata;
+        }
+
+        public decimal Localized => _metadata.localizedPrice;
+        public string CurrencyIsoCode => _metadata.isoCurrencyCode;
+        public override string ToString() => _metadata.localizedPriceString;
+    }
+    
     internal static class ProductExtension
     {
-        public static UnityEngine.Purchasing.ProductType GetUnityProductType(this IProduct product)
+        public static ProductType GetUnityProductType(this IProductItem product)
         {
             switch (product.Type)
             {
-                case ProductType.Consumable: return UnityEngine.Purchasing.ProductType.Consumable;
-                case ProductType.NonConsumable:  return UnityEngine.Purchasing.ProductType.NonConsumable;
-                case ProductType.Subscription: return UnityEngine.Purchasing.ProductType.Subscription;
+                case ProductItemType.Consumable: return ProductType.Consumable;
+                case ProductItemType.NonConsumable:  return ProductType.NonConsumable;
+                case ProductItemType.Subscription: return ProductType.Subscription;
                 default:
                     throw new ArgumentOutOfRangeException();
             }

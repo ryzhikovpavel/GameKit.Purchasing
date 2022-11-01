@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace GameKit.Purchasing
 {
-    public interface IPurchaseService<TProduct>: IEnumerable<TProduct> where TProduct : IProduct
+    public interface IPurchaseService<TProduct>: IEnumerable<TProduct> where TProduct : class, IProductItem
     {
         event Action<ITransaction<TProduct>> EventTransactionBegin;
         event Action<ITransaction<TProduct>> EventTransactionSuccess;
@@ -17,8 +17,9 @@ namespace GameKit.Purchasing
         bool IsInitialized { get; }
 
         bool FindProduct(string productId, out TProduct product);
-        Task Initialize(TProduct[] products);
-        void ConfirmAccrual(TProduct product);
+        Task Initialize(params TProduct[] products);
+        void Confirm(TProduct product);
+        void Restore();
         Task<ITransaction<TProduct>> Purchase(Transaction<TProduct> transaction);
         public Task<ITransaction<TProduct>> Purchase(string productId)
         {

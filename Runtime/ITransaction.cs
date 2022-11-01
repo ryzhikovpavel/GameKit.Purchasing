@@ -7,7 +7,7 @@ namespace GameKit.Purchasing
         string Error { get; }
     }
     
-    public interface ITransaction<out TProduct>: ITransaction where TProduct: IProduct
+    public interface ITransaction<out TProduct>: ITransaction where TProduct: IProductItem
     {
         TProduct Product { get; }
     }
