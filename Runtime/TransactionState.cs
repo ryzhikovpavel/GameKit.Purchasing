@@ -4,7 +4,7 @@ namespace GameKit.Purchasing
     {
         Created,
         Processing,
-        Pending,
+        Deferred,
         Failed,
         Canceled,
         Successful

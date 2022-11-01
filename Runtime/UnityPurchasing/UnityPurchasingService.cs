@@ -25,10 +25,6 @@ namespace GameKit.Purchasing
         private List<Transaction<TProduct>> _transactions = new List<Transaction<TProduct>>();
 
         public event Action<ITransaction<TProduct>> EventTransactionBegin;
-        public event Action<ITransaction<TProduct>> EventTransactionSuccess;
-        public event Action<ITransaction<TProduct>> EventTransactionPending;
-        public event Action<ITransaction<TProduct>> EventTransactionCanceled;
-        public event Action<ITransaction<TProduct>> EventTransactionFailed;
         public event Action<ITransaction<TProduct>> EventTransactionCompleted;
         public event Action<TProduct> EventProductPurchased;
 
@@ -159,27 +155,6 @@ namespace GameKit.Purchasing
 
             try
             {
-                switch (transaction.State)
-                {
-                    case TransactionState.Created:
-                    case TransactionState.Processing:
-                        Debug.Log(LogType.Error, "Transaction state broken: " + transaction.State.ToString());
-                        break;
-                    case TransactionState.Pending:
-                        EventTransactionPending?.Invoke(transaction);
-                        break;
-                    case TransactionState.Failed:
-                        EventTransactionFailed?.Invoke(transaction);
-                        break;
-                    case TransactionState.Canceled:
-                        EventTransactionCanceled?.Invoke(transaction);
-                        break;
-                    case TransactionState.Successful:
-                        EventTransactionSuccess?.Invoke(transaction);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
                 EventTransactionCompleted?.Invoke(transaction);
             }
             catch (Exception e)
@@ -221,10 +196,13 @@ namespace GameKit.Purchasing
                 {
                     Debug.Log($"Product: {product.definition.id}");
                 }
-                
-                item.Price.StoreValue = product.metadata.localizedPrice;
-                item.Price.StoreCurrencyIsoCode = product.metadata.isoCurrencyCode;
-                item.Price.StoreValueWithCurrency = product.metadata.localizedPriceString;
+
+                if (Application.isEditor == false)
+                {
+                    item.Price.StoreValue = product.metadata.localizedPrice;
+                    item.Price.StoreCurrencyIsoCode = product.metadata.isoCurrencyCode;
+                    item.Price.StoreValueWithCurrency = product.metadata.localizedPriceString;
+                }
 
                 if (product.availableToPurchase == false)
                 {
@@ -261,7 +239,7 @@ namespace GameKit.Purchasing
             if (IsPurchasedProductDeferred(product))
             {
                 if (FindTransaction(product.definition.id, out var transaction))
-                    transaction.State = TransactionState.Pending;
+                    transaction.State = TransactionState.Deferred;
                 return PurchaseProcessingResult.Pending;
             }
 

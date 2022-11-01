@@ -7,12 +7,8 @@ namespace GameKit.Purchasing
     public interface IPurchaseService<TProduct>: IEnumerable<TProduct> where TProduct : class, IProductItem
     {
         event Action<ITransaction<TProduct>> EventTransactionBegin;
-        event Action<ITransaction<TProduct>> EventTransactionSuccess;
-        event Action<ITransaction<TProduct>> EventTransactionPending;
-        event Action<ITransaction<TProduct>> EventTransactionCanceled;
-        event Action<ITransaction<TProduct>> EventTransactionFailed;
         event Action<ITransaction<TProduct>> EventTransactionCompleted;
-        event Action<TProduct> EventProductPurchased; 
+        event Action<TProduct> EventProductPurchased;
 
         bool IsInitialized { get; }
 

@@ -8,20 +8,10 @@ namespace GameKit.Purchasing.Mock
 {
     public class MockPurchaseService<TProduct>: IPurchaseService<TProduct> where TProduct : class, IProductItem
     {
-        private List<Transaction<TProduct>> _transactions = new List<Transaction<TProduct>>();
+        private readonly List<Transaction<TProduct>> _transactions = new List<Transaction<TProduct>>();
         private TProduct[] _products;
         public event Action<ITransaction<TProduct>> EventTransactionBegin;
-
-        public event Action<ITransaction<TProduct>> EventTransactionSuccess;
-
-        public event Action<ITransaction<TProduct>> EventTransactionPending;
-
-        public event Action<ITransaction<TProduct>> EventTransactionCanceled;
-
-        public event Action<ITransaction<TProduct>> EventTransactionFailed;
-
         public event Action<ITransaction<TProduct>> EventTransactionCompleted;
-
         public event Action<TProduct> EventProductPurchased;
 
         public bool IsInitialized { get; private set; }
@@ -74,11 +64,31 @@ namespace GameKit.Purchasing.Mock
         public async Task<ITransaction<TProduct>> Purchase(Transaction<TProduct> transaction)
         {
             Debug.Log($"IAP Purchase: {transaction.Product.Id}");
-            transaction.State = TransactionState.Processing;
             _transactions.Add(transaction);
-            await Task.Delay(1000);
-            transaction.State = TransactionState.Pending;
+            transaction.State = TransactionState.Processing;
             transaction.Product.Status = ProductStatus.Pending;
+            EventTransactionBegin?.Invoke(transaction);
+            await Task.Delay(1000);
+
+            transaction.State = TransactionState.Successful;
+            switch (transaction.Product.Type)
+            {
+                case ProductItemType.Consumable:
+                    transaction.Product.Status = ProductStatus.Ready;
+                    break;
+                case ProductItemType.NonConsumable:
+                    transaction.Product.Status = ProductStatus.Purchased;
+                    break;
+                case ProductItemType.Subscription:
+                    transaction.Product.Status = ProductStatus.Purchased;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            EventProductPurchased?.Invoke(transaction.Product);
+            EventTransactionCompleted?.Invoke(transaction);
+
             return transaction;
         }
 
