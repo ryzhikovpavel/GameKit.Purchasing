@@ -63,7 +63,7 @@ namespace GameKit.Purchasing
             if (_store.IsInitialized == false)
                 throw new Exception("Initialize IAP Service failed");
 
-            InitializeItems();
+            SyncItems();
             if (Debug.IsLogTypeAllowed(LogType.Log)) Debug.Log("Initialized");
             
             IsInitialized = true;
@@ -155,7 +155,7 @@ namespace GameKit.Purchasing
         IEnumerator IEnumerable.GetEnumerator()
             => GetEnumerator();
 
-        private void InitializeItems()
+        private void SyncItems()
         {
             foreach (TProduct item in _products)
             {
