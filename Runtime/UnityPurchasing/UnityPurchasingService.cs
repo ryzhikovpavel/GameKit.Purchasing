@@ -78,29 +78,45 @@ namespace GameKit.Purchasing
             _storeController.ConfirmPendingPurchase(p);
         }
 
-        public void Restore()
+        public async Task Restore()
         {
+            bool wait = true;
+
+            void OnCompleted(bool b)
+            {
+                wait = false;
+            }
+            
             if (Application.platform == RuntimePlatform.WSAPlayerX86 ||
                 Application.platform == RuntimePlatform.WSAPlayerX64 ||
                 Application.platform == RuntimePlatform.WSAPlayerARM)
             {
                 _extensions.GetExtension<IMicrosoftExtensions>().RestoreTransactions();
+                return;
             }
             else if (Application.platform == RuntimePlatform.IPhonePlayer ||
                      Application.platform == RuntimePlatform.OSXPlayer ||
                      Application.platform == RuntimePlatform.tvOS)
             {
-                _extensions.GetExtension<IAppleExtensions>().RestoreTransactions(null);
+                _extensions.GetExtension<IAppleExtensions>().RestoreTransactions(OnCompleted);
+                
             }
             else if (Application.platform == RuntimePlatform.Android &&
                      StandardPurchasingModule.Instance().appStore == AppStore.GooglePlay)
             {
-                _extensions.GetExtension<IGooglePlayStoreExtensions>().RestoreTransactions(null);
+                _extensions.GetExtension<IGooglePlayStoreExtensions>().RestoreTransactions(OnCompleted);
             }
             else
             {
                 Debug.Log(LogType.Warning,Application.platform.ToString() +
                                              " is not a supported platform for the Codeless IAP restore button");
+            }
+
+            while (wait)
+            {
+                await Task.Yield();
+                if (Application.isPlaying == false)
+                    throw new Exception("Application is shutdown");
             }
         }
 

@@ -19,7 +19,7 @@ namespace GameKit.Purchasing
         bool FindProduct(string productId, out TProduct product);
         Task Initialize(params TProduct[] products);
         void Confirm(TProduct product);
-        void Restore();
+        Task Restore();
         Task<ITransaction<TProduct>> Purchase(Transaction<TProduct> transaction);
         public Task<ITransaction<TProduct>> Purchase(string productId)
         {

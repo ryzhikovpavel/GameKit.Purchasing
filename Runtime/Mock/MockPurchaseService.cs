@@ -57,9 +57,11 @@ namespace GameKit.Purchasing.Mock
                 product.Status = ProductStatus.Purchased;
         }
 
-        public void Restore()
+        public async Task Restore()
         {
-            Debug.Log("IAP Restore");
+            Debug.Log("IAP Restore being");
+            await Task.Delay(1000);
+            Debug.Log("IAP Restore completed");
         }
 
         public async Task<ITransaction<TProduct>> Purchase(Transaction<TProduct> transaction)
