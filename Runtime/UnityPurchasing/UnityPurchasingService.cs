@@ -73,6 +73,10 @@ namespace GameKit.Purchasing
         {
             Product p = _store.Products.WithID(product.StoreId);
             _store.ConfirmPendingPurchase(p);
+            if (product.Type == ProductItemType.Consumable)
+                product.Status = ProductStatus.Ready;
+            else
+                product.Status = ProductStatus.Purchased;
         }
 
         public async Task Restore()
