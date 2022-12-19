@@ -120,7 +120,7 @@ namespace GameKit.Purchasing
             if (google != null)  
                 return google.IsPurchasedProductDeferred(product);
             
-            return false;
+            return true;
         }
     }
 }
