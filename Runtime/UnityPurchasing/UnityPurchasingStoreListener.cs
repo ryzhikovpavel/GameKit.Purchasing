@@ -111,7 +111,7 @@ namespace GameKit.Purchasing
         {
             if (Debug.IsLogTypeAllowed(LogType.Log)) 
                 Debug.Log($"OnDeferredPurchase {product.definition.id}, Receipt: {product.receipt}");
-            //EventPurchased?.Invoke(product);
+            EventPurchaseDeferred?.Invoke(product);
         }
 
         public bool IsPurchasedProductDeferred(Product product)
