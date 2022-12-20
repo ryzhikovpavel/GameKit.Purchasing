@@ -1,3 +1,4 @@
+#if UnityPurchasingApi
 using System;
 using UnityEngine;
 using UnityEngine.Purchasing;
@@ -123,4 +124,5 @@ namespace GameKit.Purchasing
             return true;
         }
     }
+    #endif
 }
