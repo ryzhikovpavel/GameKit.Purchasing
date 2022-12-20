@@ -124,5 +124,5 @@ namespace GameKit.Purchasing
             return true;
         }
     }
-    #endif
 }
+#endif
