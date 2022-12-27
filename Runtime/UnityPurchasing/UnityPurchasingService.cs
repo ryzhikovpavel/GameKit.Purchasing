@@ -75,6 +75,10 @@ namespace GameKit.Purchasing
         {
             Product p = _store.Products.WithID(product.StoreId);
             _store.ConfirmPendingPurchase(p);
+            if (product.Type == ProductItemType.Consumable)
+                product.Status = ProductStatus.Ready;
+            else
+                product.Status = ProductStatus.Purchased;
         }
 
         public async Task Restore()
@@ -139,6 +143,7 @@ namespace GameKit.Purchasing
                 if (Application.isPlaying == false) throw new Exception("Application is shutdown");
             }
 
+            _transactions.Remove(transaction);
             try
             {
                 EventTransactionCompleted?.Invoke(transaction);
@@ -239,7 +244,6 @@ namespace GameKit.Purchasing
                 if (transaction.State == TransactionState.Successful)
                     Debug.Log(LogType.Error, $"{transaction.Product.Id} Transaction is already completed");
                 transaction.State = TransactionState.Successful;
-                _transactions.Remove(transaction);
             }
 
             if (FindProductByStoreId(product.definition.id, out var p))

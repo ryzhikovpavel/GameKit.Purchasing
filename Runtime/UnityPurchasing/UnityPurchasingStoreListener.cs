@@ -1,3 +1,4 @@
+#if UnityPurchasingApi
 using System;
 using UnityEngine;
 using UnityEngine.Purchasing;
@@ -111,7 +112,7 @@ namespace GameKit.Purchasing
         {
             if (Debug.IsLogTypeAllowed(LogType.Log)) 
                 Debug.Log($"OnDeferredPurchase {product.definition.id}, Receipt: {product.receipt}");
-            EventPurchased?.Invoke(product);
+            EventPurchaseDeferred?.Invoke(product);
         }
 
         public bool IsPurchasedProductDeferred(Product product)
@@ -120,7 +121,8 @@ namespace GameKit.Purchasing
             if (google != null)  
                 return google.IsPurchasedProductDeferred(product);
             
-            return false;
+            return true;
         }
     }
 }
+#endif
