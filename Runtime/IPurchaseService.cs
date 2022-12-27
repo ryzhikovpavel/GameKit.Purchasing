@@ -6,6 +6,7 @@ namespace GameKit.Purchasing
 {
     public interface IPurchaseService<TProduct>: IEnumerable<TProduct> where TProduct : class, IProductItem
     {
+        event Action EventInitialized;
         event Action<ITransaction<TProduct>> EventTransactionBegin;
         event Action<ITransaction<TProduct>> EventTransactionCompleted;
         event Action<TProduct> EventProductPurchased;

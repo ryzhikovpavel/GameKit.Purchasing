@@ -21,6 +21,7 @@ namespace GameKit.Purchasing
         
         private List<Transaction<TProduct>> _transactions = new List<Transaction<TProduct>>();
 
+        public event Action EventInitialized;
         public event Action<ITransaction<TProduct>> EventTransactionBegin;
         public event Action<ITransaction<TProduct>> EventTransactionCompleted;
         public event Action<TProduct> EventProductPurchased;
@@ -67,6 +68,7 @@ namespace GameKit.Purchasing
             if (Debug.IsLogTypeAllowed(LogType.Log)) Debug.Log("Initialized");
             
             IsInitialized = true;
+            EventInitialized?.Invoke();
         }
 
         public void Confirm(TProduct product)

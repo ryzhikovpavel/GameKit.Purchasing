@@ -10,6 +10,7 @@ namespace GameKit.Purchasing.Mock
     {
         private readonly List<Transaction<TProduct>> _transactions = new List<Transaction<TProduct>>();
         private TProduct[] _products;
+        public event Action EventInitialized;
         public event Action<ITransaction<TProduct>> EventTransactionBegin;
         public event Action<ITransaction<TProduct>> EventTransactionCompleted;
         public event Action<TProduct> EventProductPurchased;
@@ -22,6 +23,7 @@ namespace GameKit.Purchasing.Mock
             await Task.Delay(1000);
             IsInitialized = true;
             Debug.Log($"IAP initialized");
+            EventInitialized?.Invoke();
         }
 
         public bool FindProduct(string productId, out TProduct product)
