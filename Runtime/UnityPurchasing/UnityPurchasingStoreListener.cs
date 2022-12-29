@@ -80,7 +80,8 @@ namespace GameKit.Purchasing
 
         void IStoreListener.OnInitializeFailed(InitializationFailureReason error)
         {
-            if (Debug.IsLogTypeAllowed(LogType.Error)) Debug.Log($"Initialize failed: {error}");
+            if (Debug.IsLogTypeAllowed(LogType.Error)) 
+                Debug.Log(LogType.Error,$"Initialize failed: {error}");
             IsInitialized = false;
             IsInitializing = false;
         }
