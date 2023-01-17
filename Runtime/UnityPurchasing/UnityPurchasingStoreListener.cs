@@ -91,7 +91,7 @@ namespace GameKit.Purchasing
             var product = purchaseEvent.purchasedProduct;
             if (Debug.IsLogTypeAllowed(LogType.Log)) Debug.Log($"ProcessPurchase - Product: '{product.definition.id}', Receipt: {product.receipt}");
 
-            if (IsPurchasedProductDeferred(product))
+            if (IsDeferredProduct(product))
             {
                 Debug.Log(LogType.Error, $"Purchase deferred - Product: '{product.definition.id}', Receipt: {product.receipt}");
                 EventPurchaseDeferred?.Invoke(product);
@@ -116,13 +116,13 @@ namespace GameKit.Purchasing
             EventPurchaseDeferred?.Invoke(product);
         }
 
-        public bool IsPurchasedProductDeferred(Product product)
+        public bool IsDeferredProduct(Product product)
         {
             var google = _extensions.GetExtension<IGooglePlayStoreExtensions>();
             if (google != null)  
                 return google.IsPurchasedProductDeferred(product);
             
-            return true;
+            return false;
         }
     }
 }

@@ -193,7 +193,7 @@ namespace GameKit.Purchasing
 
                 if (product.hasReceipt)
                 {
-                    if (_store.IsPurchasedProductDeferred(product) == false)
+                    if (_store.IsDeferredProduct(product))
                         item.Status = ProductStatus.Pending;
                     else
                         item.Status = ProductStatus.Purchased;
