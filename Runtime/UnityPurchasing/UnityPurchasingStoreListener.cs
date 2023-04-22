@@ -86,6 +86,14 @@ namespace GameKit.Purchasing
             IsInitializing = false;
         }
 
+        public void OnInitializeFailed(InitializationFailureReason error, string message)
+        {
+            if (Debug.IsLogTypeAllowed(LogType.Error)) 
+                Debug.Log(LogType.Error,$"Initialize failed: [{error}] {message}");
+            IsInitialized = false;
+            IsInitializing = false;
+        }
+
         PurchaseProcessingResult IStoreListener.ProcessPurchase(PurchaseEventArgs purchaseEvent)
         {
             var product = purchaseEvent.purchasedProduct;
